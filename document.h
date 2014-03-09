@@ -47,6 +47,22 @@ const char* zathura_document_get_path(zathura_document_t* document);
 const char* zathura_document_get_basename(zathura_document_t* document);
 
 /**
+ * Returns the original path of the document
+ *
+ * @param document The document
+ * @return The original file path of the document
+ */
+const char* zathura_document_get_orig_path(zathura_document_t* document);
+
+/**
+ * Returns the original basename of the document
+ *
+ * @param document The document
+ * @return The original basename of the document
+ */
+const char* zathura_document_get_orig_basename(zathura_document_t* document);
+
+/**
  * Returns the password of the document
  *
  * @param document The document

@@ -257,6 +257,27 @@ zathura_document_get_basename(zathura_document_t* document)
 }
 
 const char*
+zathura_document_get_orig_path(zathura_document_t* document)
+{
+  if (document == NULL) {
+    return NULL;
+  }
+
+  return document->orig_path;
+}
+
+const char*
+zathura_document_get_orig_basename(zathura_document_t* document)
+{
+  if (document == NULL) {
+    return NULL;
+  }
+
+  return document->orig_basename;
+}
+
+
+const char*
 zathura_document_get_password(zathura_document_t* document)
 {
   if (document == NULL) {
