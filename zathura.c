@@ -96,9 +96,9 @@ set_prop(Atom atom, const char *val) {
     dpy,
     win,
     atom,
-    XA_STRING, 
-    8, 
-    PropModeReplace, 
+    XA_STRING,
+    8,
+    PropModeReplace,
     (unsigned char*)val,
     strlen(val)+1
   );
@@ -132,7 +132,7 @@ zathura_init(zathura_t* zathura)
   if (girara_session_init(zathura->ui.session, "zathura") == false) {
     goto error_free;
   }
-  
+
   GdkDisplay* gdpy = gdk_display_get_default();
   dpy = gdk_x11_display_get_xdisplay(gdpy);
   atom_filepath = XInternAtom(dpy, "_ZATHURA_FILEPATH", False);
@@ -643,13 +643,24 @@ document_open(zathura_t* zathura, const char* path, const char* password,
   zathura->bisect.last_jump = zathura_document_get_current_page_number(document);
   zathura->bisect.end = number_of_pages - 1;
 
+
   /* update statusbar */
   bool basename_only = false;
+  bool original_path = false;
   girara_setting_get(zathura->ui.session, "statusbar-basename", &basename_only);
-  if (basename_only == false) {
-    girara_statusbar_item_set_text(zathura->ui.session, zathura->ui.statusbar.file, file_path);
+  girara_setting_get(zathura->ui.session, "statusbar-original-path", &original_path);
+  if (original_path == false) {
+    if (basename_only == false) {
+      girara_statusbar_item_set_text(zathura->ui.session, zathura->ui.statusbar.file, file_path);
+    } else {
+      girara_statusbar_item_set_text(zathura->ui.session, zathura->ui.statusbar.file, zathura_document_get_basename(document));
+    }
   } else {
-    girara_statusbar_item_set_text(zathura->ui.session, zathura->ui.statusbar.file, zathura_document_get_basename(document));
+    if (basename_only == false) {
+      girara_statusbar_item_set_text(zathura->ui.session, zathura->ui.statusbar.file, zathura_document_get_orig_path(document));
+    } else {
+      girara_statusbar_item_set_text(zathura->ui.session, zathura->ui.statusbar.file, zathura_document_get_orig_basename(document));
+    }
   }
 
   /* xprop */
@@ -806,11 +817,21 @@ document_open(zathura_t* zathura, const char* path, const char* password,
 
   /* update title */
   basename_only = false;
+  original_path = false;
   girara_setting_get(zathura->ui.session, "window-title-basename", &basename_only);
-  if (basename_only == false) {
-    girara_set_window_title(zathura->ui.session, file_path);
+  girara_setting_get(zathura->ui.session, "window-title-original-path", &original_path);
+  if (original_path == false) {
+    if (basename_only == false) {
+      girara_set_window_title(zathura->ui.session, file_path);
+    } else {
+      girara_set_window_title(zathura->ui.session, zathura_document_get_basename(document));
+    }
   } else {
-    girara_set_window_title(zathura->ui.session, zathura_document_get_basename(document));
+    if (basename_only == false) {
+      girara_set_window_title(zathura->ui.session, zathura_document_get_orig_path(document));
+    } else {
+      girara_set_window_title(zathura->ui.session, zathura_document_get_orig_basename(document));
+    }
   }
 
   g_free(file_uri);
@@ -984,7 +1005,7 @@ document_close(zathura_t* zathura, bool keep_monitor)
 
   /* store file information */
   store_file_information(zathura);
-  
+
   const char* path = zathura_document_get_path(zathura->document);
 
   /* save jumplist */
