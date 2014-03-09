@@ -25,6 +25,8 @@
 struct zathura_document_s {
   char* file_path; /**< File path of the document */
   char* basename; /**< Basename of the document */
+  char* orig_path; /**< Path document was opened through */
+  char* orig_basename; /**< Basename of original path */
   const char* password; /**< Password of the document */
   unsigned int current_page_number; /**< Current page number */
   unsigned int number_of_pages; /**< Number of pages */
@@ -84,8 +86,16 @@ zathura_document_open(zathura_plugin_manager_t* plugin_manager, const char*
     path_max = 4096;
 #endif
 
+  char* orig_path              = NULL;
   char* real_path              = NULL;
   zathura_document_t* document = NULL;
+
+  orig_path = malloc(sizeof(char) * path_max);
+  if (orig_path == NULL) {
+    g_free((void*)content_type);
+    return NULL;
+  }
+  strcpy(orig_path, path);
 
   real_path = malloc(sizeof(char) * path_max);
   if (real_path == NULL) {
@@ -118,18 +128,20 @@ zathura_document_open(zathura_plugin_manager_t* plugin_manager, const char*
     goto error_free;
   }
 
-  document->file_path   = real_path;
-  document->basename    = g_path_get_basename(real_path);
-  document->password    = password;
-  document->scale       = 1.0;
-  document->plugin      = plugin;
-  document->adjust_mode = ZATHURA_ADJUST_NONE;
-  document->cell_width  = 0.0;
-  document->cell_height = 0.0;
-  document->view_height = 0;
-  document->view_width  = 0;
-  document->position_x  = 0.0;
-  document->position_y  = 0.0;
+  document->file_path     = real_path;
+  document->basename      = g_path_get_basename(real_path);
+  document->orig_path     = orig_path;
+  document->orig_basename = g_path_get_basename(path);
+  document->password      = password;
+  document->scale         = 1.0;
+  document->plugin        = plugin;
+  document->adjust_mode   = ZATHURA_ADJUST_NONE;
+  document->cell_width    = 0.0;
+  document->cell_height   = 0.0;
+  document->view_height   = 0;
+  document->view_width    = 0;
+  document->position_x    = 0.0;
+  document->position_y    = 0.0;
 
   /* open document */
   zathura_plugin_functions_t* functions = zathura_plugin_get_functions(plugin);
